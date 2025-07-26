@@ -1,0 +1,5 @@
+onlyBuiltDependencies:
+  - '@mui/x-telemetry'
+  - '@tailwindcss/oxide'
+  - sharp
+  - unrs-resolver
