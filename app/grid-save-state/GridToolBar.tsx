@@ -92,7 +92,7 @@ function NewViewListButton(props: {
     );
 }
 
-const demoReducer: Reducer<DemoState, DemoActions> = (state: DemoState, action: DemoActions) => {
+const toolbarReducer: Reducer<DemoState, DemoActions> = (state: DemoState, action: DemoActions) => {
     switch (action.type) {
         case "createView": {
             const id = Math.random().toString();
@@ -171,7 +171,7 @@ const demoReducer: Reducer<DemoState, DemoActions> = (state: DemoState, action: 
     }
 };
 
-const DEMO_INITIAL_STATE: DemoState = {
+const INITIAL_STATE: DemoState = {
     views: {},
     newViewLabel: "",
     isMenuOpened: false,
@@ -179,9 +179,9 @@ const DEMO_INITIAL_STATE: DemoState = {
     activeViewId: null,
 };
 
-export default function CustomToolbar(): ReactNode {
+export default function GridToolbar(): ReactNode {
     const apiRef = useGridApiContext();
-    const [state, dispatch] = useReducer(demoReducer, DEMO_INITIAL_STATE);
+    const [reducerState, dispatch] = useReducer(toolbarReducer, INITIAL_STATE);
 
     const createNewView = () => {
         dispatch({
@@ -190,9 +190,7 @@ export default function CustomToolbar(): ReactNode {
         });
     };
 
-    const handleNewViewLabelChange = (
-        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) => {
+    const handleNewViewLabelChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         dispatch({ type: "setNewViewLabel", label: event.target.value });
     };
 
@@ -201,12 +199,12 @@ export default function CustomToolbar(): ReactNode {
     }, []);
 
     const handleSetActiveView = (viewId: string) => {
-        apiRef.current.restoreState(state.views[viewId].value);
+        apiRef.current.restoreState(reducerState.views[viewId].value);
         dispatch({ type: "setActiveView", id: viewId });
     };
 
     const handlePopperAnchorClick = (event: MouseEvent) => {
-        console.log("Button clicked, current state:", state);
+        console.log("Button clicked, current state:", reducerState);
         dispatch({ type: "togglePopper", element: event.currentTarget as HTMLElement });
         event.stopPropagation();
     };
@@ -216,24 +214,15 @@ export default function CustomToolbar(): ReactNode {
     };
 
     const isNewViewLabelValid = useMemo(() => {
-        if (state.newViewLabel.length === 0) {
+        if (reducerState.newViewLabel.length === 0) {
             return false;
         }
 
-        return Object.values(state.views).every(
-            (view) => view.label !== state.newViewLabel,
-        );
-    }, [state.views, state.newViewLabel]);
+        return Object.values(reducerState.views).every((view) => view.label !== reducerState.newViewLabel);
+    }, [reducerState.views, reducerState.newViewLabel]);
 
-    const canBeMenuOpened = state.isMenuOpened && Boolean(state.menuAnchorEl);
+    const canBeMenuOpened = reducerState.isMenuOpened && Boolean(reducerState.menuAnchorEl);
     const popperId = canBeMenuOpened ? "transition-popper" : undefined;
-
-    console.log("Render state:", {
-        isMenuOpened: state.isMenuOpened,
-        menuAnchorEl: state.menuAnchorEl,
-        canBeMenuOpened,
-        viewsCount: Object.keys(state.views).length
-    });
 
     const handleListKeyDown = (event: KeyboardEvent) => {
         if (event.key === "Tab") {
@@ -251,17 +240,17 @@ export default function CustomToolbar(): ReactNode {
                 type="button"
                 size="small"
                 id="custom-view-button"
-                aria-controls={state.isMenuOpened ? "custom-view-menu" : undefined}
-                aria-expanded={state.isMenuOpened ? "true" : undefined}
+                aria-controls={reducerState.isMenuOpened ? "custom-view-menu" : undefined}
+                aria-expanded={reducerState.isMenuOpened ? "true" : undefined}
                 aria-haspopup="true"
                 onClick={handlePopperAnchorClick}>
-                Custom view ({Object.keys(state.views).length})
+                Custom view ({Object.keys(reducerState.views).length})
             </Button>
 
             <Popper
                 id={popperId}
                 open={canBeMenuOpened}
-                anchorEl={state.menuAnchorEl}
+                anchorEl={reducerState.menuAnchorEl}
                 role={undefined}
                 transition
                 placement="bottom-start"
@@ -272,17 +261,17 @@ export default function CustomToolbar(): ReactNode {
                             <ClickAwayListener onClickAway={handleClosePopper}>
                                 <MenuList
                                     id="custom-view-menu"
-                                    autoFocusItem={state.isMenuOpened}
+                                    autoFocusItem={reducerState.isMenuOpened}
                                     aria-labelledby="custom-view-button"
                                     onKeyDown={handleListKeyDown}>
-                                    {Object.entries(state.views).map(([viewId, view]) => {
+                                    {Object.entries(reducerState.views).map(([viewId, view]) => {
                                         console.log("Rendering view item:", viewId, view);
                                         return (
                                             <ViewListItem
                                                 key={viewId}
                                                 view={view}
                                                 viewId={viewId}
-                                                selected={viewId === state.activeViewId}
+                                                selected={viewId === reducerState.activeViewId}
                                                 onDelete={handleDeleteView}
                                                 onSelect={handleSetActiveView} />
                                         );
@@ -295,7 +284,7 @@ export default function CustomToolbar(): ReactNode {
             </Popper>
 
             <NewViewListButton
-                label={state.newViewLabel}
+                label={reducerState.newViewLabel}
                 onLabelChange={handleNewViewLabelChange}
                 onSubmit={createNewView}
                 isValid={isNewViewLabelValid} />

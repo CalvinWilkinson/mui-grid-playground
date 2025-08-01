@@ -8,6 +8,7 @@ import {
     useGridApiRef,
 } from "@mui/x-data-grid";
 import { useCallback, useLayoutEffect, useState } from "react";
+import GridToolbar from "./grid-save-state/GridToolBar";
 
 export default function SaveAndRestoreStorageGrid() {
     const apiRef = useGridApiRef();
@@ -49,6 +50,8 @@ export default function SaveAndRestoreStorageGrid() {
         <Box sx={{ height: 300, width: "100%" }}>
             <DataGrid
                 {...data}
+                slots={{ toolbar: GridToolbar }}
+                showToolbar={true}
                 apiRef={apiRef}
                 loading={loading}
                 initialState={{
