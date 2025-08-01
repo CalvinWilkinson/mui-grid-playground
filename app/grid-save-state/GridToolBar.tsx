@@ -1,236 +1,32 @@
-import { ChangeEvent, ReactNode, useCallback, useMemo, useReducer, MouseEvent, KeyboardEvent, Reducer, Fragment, useState, FormEventHandler } from "react";
-import { Button, ClickAwayListener, Dialog, DialogActions, DialogContent, DialogTitle, Fade, IconButton, MenuItem, MenuList, Paper, Popper, TextField } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
-import { Toolbar, useGridApiContext } from "@mui/x-data-grid";
-import { StateView } from "./state-view";
-import { DemoState } from "./demo-state";
-import { DemoActions } from "./demo-actions";
+import { ChangeEvent, ReactNode } from "react";
+import { Button, ClickAwayListener, Fade, MenuList, Paper, Popper } from "@mui/material";
+import { Toolbar } from "@mui/x-data-grid";
+import { ViewListItem } from "./ViewListItem";
+import { NewViewListButton } from "./NewViewListButton";
+import { useGridViews } from "./useGridViews";
+import { usePopper } from "./usePopper";
 
-
-function ViewListItem(props: {
-    view: StateView;
-    viewId: string;
-    selected: boolean;
-    onDelete: (viewId: string) => void;
-    onSelect: (viewId: string) => void;
-}): ReactNode {
-    console.log("ViewListItem Invoked");
-    const { view, viewId, selected, onDelete, onSelect, ...other } = props;
-
-    return (
-        <MenuItem selected={selected} onClick={() => onSelect(viewId)} {...other}>
-            {view.label}
-            <IconButton
-                edge="end"
-                aria-label="delete"
-                size="small"
-                onClick={(event) => {
-                    event.stopPropagation();
-                    onDelete(viewId);
-                }}>
-                <DeleteIcon />
-            </IconButton>
-        </MenuItem>
-    );
-}
-
-function NewViewListButton(props: {
-    label: string;
-    onLabelChange: (
-        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) => void;
-    onSubmit: () => void;
-    isValid: boolean;
-}): ReactNode {
-    const { label, onLabelChange, onSubmit, isValid } = props;
-    const [isAddingView, setIsAddingView] = useState(false);
-
-    const handleSubmitForm: FormEventHandler = (event) => {
-        onSubmit();
-        setIsAddingView(false);
-        event.preventDefault();
-    };
-
-    return (
-        <Fragment>
-            <Button
-                endIcon={<AddIcon />}
-                size="small"
-                onClick={() => setIsAddingView(true)}>
-                Save current view
-            </Button>
-
-            <Dialog onClose={() => setIsAddingView(false)} open={isAddingView}>
-                <form onSubmit={handleSubmitForm}>
-                    <DialogTitle>New custom view</DialogTitle>
-
-                    <DialogContent>
-                        <TextField
-                            autoFocus
-                            value={label}
-                            onChange={onLabelChange}
-                            margin="dense"
-                            size="small"
-                            label="Custom view label"
-                            variant="standard"
-                            fullWidth/>
-                    </DialogContent>
-
-                    <DialogActions>
-                        <Button type="button" onClick={() => setIsAddingView(false)}>
-                            Cancel
-                        </Button>
-
-                        <Button type="submit" disabled={!isValid}>
-                            Create view
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
-        </Fragment>
-    );
-}
-
-const toolbarReducer: Reducer<DemoState, DemoActions> = (state: DemoState, action: DemoActions) => {
-    switch (action.type) {
-        case "createView": {
-            const id = Math.random().toString();
-            const label = state.newViewLabel;
-
-            return {
-                ...state,
-                activeViewId: id,
-                newViewLabel: "",
-                views: {
-                    ...state.views,
-                    [id]: { label: label, value: action.value },
-                },
-                isMenuOpened: false,
-            };
-        }
-
-        case "deleteView": {
-            const views = Object.fromEntries(
-                Object.entries(state.views).filter(([id]) => id !== action.id),
-            );
-
-            let activeViewId: string | null;
-            if (state.activeViewId !== action.id) {
-                activeViewId = state.activeViewId;
-            } else {
-                const viewIds = Object.keys(state.views);
-
-                if (viewIds.length === 0) {
-                    activeViewId = null;
-                } else {
-                    activeViewId = viewIds[0];
-                }
-            }
-
-            return {
-                ...state,
-                views,
-                activeViewId,
-            };
-        }
-
-        case "setActiveView": {
-            return {
-                ...state,
-                activeViewId: action.id,
-                isMenuOpened: false,
-            };
-        }
-
-        case "setNewViewLabel": {
-            return {
-                ...state,
-                newViewLabel: action.label,
-            };
-        }
-
-        case "togglePopper": {
-            return {
-                ...state,
-                isMenuOpened: !state.isMenuOpened,
-                menuAnchorEl: action.element,
-            };
-        }
-
-        case "closePopper": {
-            return {
-                ...state,
-                isMenuOpened: false,
-            };
-        }
-
-        default: {
-            return state;
-        }
-    }
-};
-
-const INITIAL_STATE: DemoState = {
-    views: {},
-    newViewLabel: "",
-    isMenuOpened: false,
-    menuAnchorEl: null,
-    activeViewId: null,
-};
 
 export default function GridToolbar(): ReactNode {
-    const apiRef = useGridApiContext();
-    const [reducerState, dispatch] = useReducer(toolbarReducer, INITIAL_STATE);
+    const {
+        state,
+        dispatch,
+        createNewView,
+        handleDeleteView,
+        handleSetActiveView,
+        isNewViewLabelValid,
+    } = useGridViews();
 
-    const createNewView = () => {
-        dispatch({
-            type: "createView",
-            value: apiRef.current.exportState(),
-        });
-    };
+    const {
+        handlePopperAnchorClick,
+        handleClosePopper,
+        handleListKeyDown,
+        canBeMenuOpened,
+        popperId,
+    } = usePopper(dispatch, state.isMenuOpened, state.menuAnchorEl);
 
     const handleNewViewLabelChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         dispatch({ type: "setNewViewLabel", label: event.target.value });
-    };
-
-    const handleDeleteView = useCallback((viewId: string) => {
-        dispatch({ type: "deleteView", id: viewId });
-    }, []);
-
-    const handleSetActiveView = (viewId: string) => {
-        apiRef.current.restoreState(reducerState.views[viewId].value);
-        dispatch({ type: "setActiveView", id: viewId });
-    };
-
-    const handlePopperAnchorClick = (event: MouseEvent) => {
-        console.log("Button clicked, current state:", reducerState);
-        dispatch({ type: "togglePopper", element: event.currentTarget as HTMLElement });
-        event.stopPropagation();
-    };
-
-    const handleClosePopper = () => {
-        dispatch({ type: "closePopper" });
-    };
-
-    const isNewViewLabelValid = useMemo(() => {
-        if (reducerState.newViewLabel.length === 0) {
-            return false;
-        }
-
-        return Object.values(reducerState.views).every((view) => view.label !== reducerState.newViewLabel);
-    }, [reducerState.views, reducerState.newViewLabel]);
-
-    const canBeMenuOpened = reducerState.isMenuOpened && Boolean(reducerState.menuAnchorEl);
-    const popperId = canBeMenuOpened ? "transition-popper" : undefined;
-
-    const handleListKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Tab") {
-            event.preventDefault();
-            dispatch({ type: "closePopper" });
-        } else if (event.key === "Escape") {
-            dispatch({ type: "closePopper" });
-        }
     };
 
     return (
@@ -240,17 +36,17 @@ export default function GridToolbar(): ReactNode {
                 type="button"
                 size="small"
                 id="custom-view-button"
-                aria-controls={reducerState.isMenuOpened ? "custom-view-menu" : undefined}
-                aria-expanded={reducerState.isMenuOpened ? "true" : undefined}
+                aria-controls={state.isMenuOpened ? "custom-view-menu" : undefined}
+                aria-expanded={state.isMenuOpened ? "true" : undefined}
                 aria-haspopup="true"
                 onClick={handlePopperAnchorClick}>
-                Custom view ({Object.keys(reducerState.views).length})
+                Custom view ({Object.keys(state.views).length})
             </Button>
 
             <Popper
                 id={popperId}
                 open={canBeMenuOpened}
-                anchorEl={reducerState.menuAnchorEl}
+                anchorEl={state.menuAnchorEl}
                 role={undefined}
                 transition
                 placement="bottom-start"
@@ -261,21 +57,18 @@ export default function GridToolbar(): ReactNode {
                             <ClickAwayListener onClickAway={handleClosePopper}>
                                 <MenuList
                                     id="custom-view-menu"
-                                    autoFocusItem={reducerState.isMenuOpened}
+                                    autoFocusItem={state.isMenuOpened}
                                     aria-labelledby="custom-view-button"
                                     onKeyDown={handleListKeyDown}>
-                                    {Object.entries(reducerState.views).map(([viewId, view]) => {
-                                        console.log("Rendering view item:", viewId, view);
-                                        return (
-                                            <ViewListItem
-                                                key={viewId}
-                                                view={view}
-                                                viewId={viewId}
-                                                selected={viewId === reducerState.activeViewId}
-                                                onDelete={handleDeleteView}
-                                                onSelect={handleSetActiveView} />
-                                        );
-                                    })}
+                                    {Object.entries(state.views).map(([viewId, view]) => (
+                                        <ViewListItem
+                                            key={viewId}
+                                            view={view}
+                                            viewId={viewId}
+                                            selected={viewId === state.activeViewId}
+                                            onDelete={handleDeleteView}
+                                            onSelect={handleSetActiveView} />
+                                    ))}
                                 </MenuList>
                             </ClickAwayListener>
                         </Paper>
@@ -284,7 +77,7 @@ export default function GridToolbar(): ReactNode {
             </Popper>
 
             <NewViewListButton
-                label={reducerState.newViewLabel}
+                label={state.newViewLabel}
                 onLabelChange={handleNewViewLabelChange}
                 onSubmit={createNewView}
                 isValid={isNewViewLabelValid} />
