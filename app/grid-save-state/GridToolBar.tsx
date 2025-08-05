@@ -1,8 +1,8 @@
 import { ChangeEvent, ReactNode } from "react";
 import { Button, ClickAwayListener, Fade, MenuList, Paper, Popper } from "@mui/material";
 import { Toolbar } from "@mui/x-data-grid";
-import { ViewListItem } from "./ViewListItem";
-import { NewViewListButton } from "./NewViewListButton";
+import { PopupMenuItem } from "./PopupMenuItem";
+import { NewGridViewButton } from "./NewGridViewButton";
 import { useGridViews } from "./useGridViews";
 import { usePopupMenu } from "./usePopupMenu";
 
@@ -61,7 +61,7 @@ export default function GridToolbar(): ReactNode {
                                     aria-labelledby="custom-view-button"
                                     onKeyDown={handleListKeyDown}>
                                     {Object.entries(state.views).map(([viewId, view]) => (
-                                        <ViewListItem
+                                        <PopupMenuItem
                                             key={viewId}
                                             view={view}
                                             viewId={viewId}
@@ -76,7 +76,7 @@ export default function GridToolbar(): ReactNode {
                 )}
             </Popper>
 
-            <NewViewListButton
+            <NewGridViewButton
                 label={state.newViewLabel}
                 onLabelChange={handleNewViewLabelChange}
                 onSubmit={createNewView}

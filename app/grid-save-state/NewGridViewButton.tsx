@@ -3,9 +3,9 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } 
 import AddIcon from "@mui/icons-material/Add";
 
 /**
- * Props for the NewViewListButton component.
+ * Props for the {@link NewGridViewButton} component.
  */
-interface NewViewListButtonProps {
+interface NewGridViewButtonProps {
     /**
      * The current value of the new view label input field.
      */
@@ -31,10 +31,10 @@ interface NewViewListButtonProps {
  * A component that renders a button to save the current grid view state.
  * When clicked, it opens a dialog where users can enter a label for the new view.
  * The component handles the dialog state and form submission internally.
- * @param {NewViewListButtonProps} props - The component props
+ * @param {NewGridViewButtonProps} props - The component props
  * @returns {ReactNode} The rendered button and dialog components
  */
-export function NewViewListButton(props: NewViewListButtonProps): ReactNode {
+export function NewGridViewButton(props: NewGridViewButtonProps): ReactNode {
     const { label, onLabelChange, onSubmit, isValid } = props;
     
     /**
