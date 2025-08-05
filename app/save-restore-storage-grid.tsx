@@ -47,6 +47,8 @@ export default function SaveAndRestoreStorageGrid() {
         window.addEventListener("beforeunload", saveSnapshot);
 
         return () => {
+            console.log("BEFORE UNLOAD");
+            window.alert("BEFORE UNLOAD");
             // in case of an SPA remove the event-listener
             window.removeEventListener("beforeunload", saveSnapshot);
             saveSnapshot();
