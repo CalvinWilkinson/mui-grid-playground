@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useReducer } from "react";
+import { Dispatch, useCallback, useMemo, useReducer } from "react";
 import { useGridApiContext } from "@mui/x-data-grid";
 import { toolbarReducer, INITIAL_STATE } from "./toolbar-reducer";
 import { GridActions } from "./grid-actions";
@@ -15,7 +15,7 @@ interface HookResult {
     /**
      * Dispatch function for updating state
      */
-    dispatch: React.Dispatch<GridActions>;
+    dispatch: Dispatch<GridActions>;
     
     /**
      * Function to create a new view from current grid state
@@ -102,7 +102,7 @@ export function useGridViews(): HookResult {
 
     return {
         state,
-        dispatch: dispatch as React.Dispatch<GridActions>,
+        dispatch: dispatch as Dispatch<GridActions>,
         createNewView,
         handleDeleteView,
         handleSetActiveView,

@@ -1,4 +1,4 @@
-import { useCallback, KeyboardEvent, MouseEvent } from "react";
+import { useCallback, KeyboardEvent, MouseEvent, Dispatch } from "react";
 import { GridActions } from "./grid-actions";
 
 /**
@@ -44,13 +44,13 @@ interface UsePopupMenuResult {
  * - Handle keyboard navigation (Tab/Escape to close)
  * - Determine if the menu can be opened based on state
  * - Provide accessibility ID for the popper
- * @param {React.Dispatch<GridActions>} dispatch - Function to dispatch state changes
+ * @param {Dispatch<GridActions>} dispatch - Function to dispatch state changes
  * @param {boolean} isMenuOpened - Current state of whether menu is opened
  * @param {HTMLElement | null} menuAnchorEl - DOM element that anchors the menu
  * @returns {UsePopupMenuResult} Object containing event handlers and menu state
  */
 export function usePopupMenu(
-    dispatch: React.Dispatch<GridActions>, 
+    dispatch: Dispatch<GridActions>, 
     isMenuOpened: boolean, 
     menuAnchorEl: HTMLElement | null
 ): UsePopupMenuResult {
