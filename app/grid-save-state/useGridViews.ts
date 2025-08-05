@@ -1,4 +1,4 @@
-import { Dispatch, useCallback, useMemo, useReducer } from "react";
+import { Dispatch, useCallback, useMemo, useReducer, useEffect } from "react";
 import { useGridApiContext } from "@mui/x-data-grid";
 import { toolbarReducer, INITIAL_STATE } from "./toolbar-reducer";
 import { GridActions } from "./grid-actions";
@@ -38,6 +38,9 @@ interface HookResult {
     isNewViewLabelValid: boolean;
 }
 
+// Global state storage for multiple grid instances
+const gridStates = new Map<string, typeof INITIAL_STATE>();
+
 /**
  * Custom hook for managing MUI Data Grid view states.
  * 
@@ -46,15 +49,30 @@ interface HookResult {
  * - Delete existing views
  * - Switch between different saved views
  * - Validate new view labels for uniqueness
+ * - Maintain independent state for different grid instances
  * 
+ * @param gridId - Unique identifier for this grid instance
  * @returns {HookResult} Object containing state, dispatch function, and view management functions
  */
-export function useGridViews(): HookResult {
+export function useGridViews(gridId: string = "default"): HookResult {
     // Get the MUI Data Grid API reference for accessing grid state
     const apiRef = useGridApiContext();
     
+    // Get or create initial state for this grid instance
+    const getInitialState = useCallback(() => {
+        if (!gridStates.has(gridId)) {
+            gridStates.set(gridId, { ...INITIAL_STATE });
+        }
+        return gridStates.get(gridId)!;
+    }, [gridId]);
+
     // Initialize state with reducer for managing views
-    const [state, dispatch] = useReducer(toolbarReducer, INITIAL_STATE);
+    const [state, dispatch] = useReducer(toolbarReducer, getInitialState());
+
+    // Update the global state whenever local state changes
+    useEffect(() => {
+        gridStates.set(gridId, state);
+    }, [gridId, state]);
 
     /**
      * Creates a new view by capturing the current state of the grid.
@@ -102,7 +120,7 @@ export function useGridViews(): HookResult {
 
     return {
         state,
-        dispatch: dispatch as Dispatch<GridActions>,
+        dispatch,
         createNewView,
         handleDeleteView,
         handleSetActiveView,

@@ -40,7 +40,7 @@ export function NewGridViewButton(props: NewGridViewButtonProps): ReactNode {
     /**
      * Local state to control whether the "Add View" dialog is currently open.
      */
-    const [isAddingView, setIsAddingView] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     /**
      * Handles form submission for creating a new view.
@@ -49,7 +49,7 @@ export function NewGridViewButton(props: NewGridViewButtonProps): ReactNode {
      */
     const handleSubmitForm: FormEventHandler = (event) => {
         onSubmit();
-        setIsAddingView(false);
+        setDialogOpen(false);
         event.preventDefault();
     };
 
@@ -62,7 +62,7 @@ export function NewGridViewButton(props: NewGridViewButtonProps): ReactNode {
             <Button
                 endIcon={<AddIcon />}
                 size="small"
-                onClick={() => setIsAddingView(true)}>
+                onClick={() => setDialogOpen(true)}>
                 Save current view
             </Button>
 
@@ -70,7 +70,7 @@ export function NewGridViewButton(props: NewGridViewButtonProps): ReactNode {
              * Dialog for creating a new view with a custom label.
              * Contains a form with text input and action buttons.
              */}
-            <Dialog onClose={() => setIsAddingView(false)} open={isAddingView}>
+            <Dialog onClose={() => setDialogOpen(false)} open={dialogOpen}>
                 <form onSubmit={handleSubmitForm}>
                     <DialogTitle>New custom view</DialogTitle>
 
@@ -92,7 +92,7 @@ export function NewGridViewButton(props: NewGridViewButtonProps): ReactNode {
 
                     <DialogActions>
                         {/* CANCEL BUTTON */}
-                        <Button type="button" onClick={() => setIsAddingView(false)}>
+                        <Button type="button" onClick={() => setDialogOpen(false)}>
                             Cancel
                         </Button>
 

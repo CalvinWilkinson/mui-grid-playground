@@ -6,8 +6,22 @@ import { NewGridViewButton } from "./NewGridViewButton";
 import { useGridViews } from "./useGridViews";
 import { usePopupMenu } from "./usePopupMenu";
 
+interface GridToolbarProps {
+    /**
+     * Unique identifier for this grid instance to maintain independent views
+     */
+    gridId?: string;
+    
+    /**
+     * Optional title for the views button
+     */
+    title?: string;
+}
 
-export default function GridToolbar(): ReactNode {
+export default function GridToolbar({ 
+    gridId = "default", 
+    title = "Custom view" 
+}: GridToolbarProps): ReactNode {
     const {
         state,
         dispatch,
@@ -15,7 +29,7 @@ export default function GridToolbar(): ReactNode {
         handleDeleteView,
         handleSetActiveView,
         isNewViewLabelValid,
-    } = useGridViews();
+    } = useGridViews(gridId);
 
     const {
         handleClick: handlePopperAnchorClick,
@@ -35,12 +49,12 @@ export default function GridToolbar(): ReactNode {
                 aria-describedby={popperId}
                 type="button"
                 size="small"
-                id="custom-view-button"
-                aria-controls={state.isMenuOpened ? "custom-view-menu" : undefined}
+                id={`custom-view-button-${gridId}`}
+                aria-controls={state.isMenuOpened ? `custom-view-menu-${gridId}` : undefined}
                 aria-expanded={state.isMenuOpened ? "true" : undefined}
                 aria-haspopup="true"
                 onClick={handlePopperAnchorClick}>
-                Custom view ({Object.keys(state.views).length})
+                {title} ({Object.keys(state.views).length})
             </Button>
 
             <Popper
@@ -56,9 +70,9 @@ export default function GridToolbar(): ReactNode {
                         <Paper>
                             <ClickAwayListener onClickAway={handleClosePopper}>
                                 <MenuList
-                                    id="custom-view-menu"
+                                    id={`custom-view-menu-${gridId}`}
                                     autoFocusItem={state.isMenuOpened}
-                                    aria-labelledby="custom-view-button"
+                                    aria-labelledby={`custom-view-button-${gridId}`}
                                     onKeyDown={handleListKeyDown}>
                                     {Object.entries(state.views).map(([viewId, view]) => (
                                         <PopupMenuItem
