@@ -4,7 +4,7 @@ import { Toolbar } from "@mui/x-data-grid";
 import { ViewListItem } from "./ViewListItem";
 import { NewViewListButton } from "./NewViewListButton";
 import { useGridViews } from "./useGridViews";
-import { usePopper } from "./usePopper";
+import { usePopupMenu } from "./usePopupMenu";
 
 
 export default function GridToolbar(): ReactNode {
@@ -23,7 +23,7 @@ export default function GridToolbar(): ReactNode {
         handleListKeyDown,
         canBeMenuOpened,
         popperId,
-    } = usePopper(dispatch, state.isMenuOpened, state.menuAnchorEl);
+    } = usePopupMenu(dispatch, state.isMenuOpened, state.menuAnchorEl);
 
     const handleNewViewLabelChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         dispatch({ type: "setNewViewLabel", label: event.target.value });

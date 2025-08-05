@@ -1,6 +1,6 @@
 import { StateView } from "./state-view";
 
-export interface DemoState {
+export interface GridState {
     views: { [id: string]: StateView };
     newViewLabel: string;
     activeViewId: string | null;

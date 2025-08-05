@@ -1,10 +1,10 @@
 import { useCallback, KeyboardEvent, MouseEvent } from "react";
-import { DemoActions } from "./demo-actions";
+import { GridActions } from "./grid-actions";
 
 /**
  * Interface defining the return type of the usePopper hook.
  */
-interface UsePopperResult {
+interface UsePopupMenuResult {
     /**
      * Function to handle clicks on the popper anchor element.
      * Toggles the popper menu and prevents event bubbling.
@@ -44,23 +44,23 @@ interface UsePopperResult {
  * - Handle keyboard navigation (Tab/Escape to close)
  * - Determine if the menu can be opened based on state
  * - Provide accessibility ID for the popper
- * @param {React.Dispatch<DemoActions>} dispatch - Function to dispatch state changes
+ * @param {React.Dispatch<GridActions>} dispatch - Function to dispatch state changes
  * @param {boolean} isMenuOpened - Current state of whether menu is opened
  * @param {HTMLElement | null} menuAnchorEl - DOM element that anchors the menu
- * @returns {UsePopperResult} Object containing event handlers and menu state
+ * @returns {UsePopupMenuResult} Object containing event handlers and menu state
  */
-export function usePopper(
-    dispatch: React.Dispatch<DemoActions>, 
+export function usePopupMenu(
+    dispatch: React.Dispatch<GridActions>, 
     isMenuOpened: boolean, 
     menuAnchorEl: HTMLElement | null
-): UsePopperResult {
+): UsePopupMenuResult {
     /**
      * Handles clicks on the popper anchor element.
      * Toggles the popper menu state and prevents the event from bubbling up.
      * @param {MouseEvent} event - The mouse click event
      */
     const handlePopperAnchorClick = useCallback((event: MouseEvent) => {
-        dispatch({ type: "togglePopper", element: event.currentTarget as HTMLElement });
+        dispatch({ type: "togglePopupMenu", element: event.currentTarget as HTMLElement });
         event.stopPropagation();
     }, [dispatch]);
 
@@ -68,7 +68,7 @@ export function usePopper(
      * Closes the popper menu by dispatching the closePopper action.
      */
     const handleClosePopper = useCallback(() => {
-        dispatch({ type: "closePopper" });
+        dispatch({ type: "closePopupMenu" });
     }, [dispatch]);
 
     /**
@@ -80,9 +80,9 @@ export function usePopper(
     const handleListKeyDown = useCallback((event: KeyboardEvent) => {
         if (event.key === "Tab") {
             event.preventDefault();
-            dispatch({ type: "closePopper" });
+            dispatch({ type: "closePopupMenu" });
         } else if (event.key === "Escape") {
-            dispatch({ type: "closePopper" });
+            dispatch({ type: "closePopupMenu" });
         }
     }, [dispatch]);
 
