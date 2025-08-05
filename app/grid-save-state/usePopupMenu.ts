@@ -9,12 +9,12 @@ interface UsePopupMenuResult {
      * Function to handle clicks on the popper anchor element.
      * Toggles the popper menu and prevents event bubbling.
      */
-    handlePopperAnchorClick: (event: MouseEvent) => void;
+    handleClick: (event: MouseEvent) => void;
     
     /**
      * Function to close the popper menu.
      */
-    handleClosePopper: () => void;
+    handleClose: () => void;
     
     /**
      * Function to handle keyboard events on the popper list.
@@ -93,8 +93,8 @@ export function usePopupMenu(
     const popperId = canBeMenuOpened ? "transition-popper" : undefined;
 
     return {
-        handlePopperAnchorClick,
-        handleClosePopper,
+        handleClick: handlePopperAnchorClick,
+        handleClose: handleClosePopper,
         handleListKeyDown,
         canBeMenuOpened,
         popperId,

@@ -18,8 +18,8 @@ export default function GridToolbar(): ReactNode {
     } = useGridViews();
 
     const {
-        handlePopperAnchorClick,
-        handleClosePopper,
+        handleClick: handlePopperAnchorClick,
+        handleClose: handleClosePopper,
         handleListKeyDown,
         canBeMenuOpened,
         popperId,
