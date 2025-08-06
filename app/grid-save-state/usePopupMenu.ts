@@ -10,24 +10,24 @@ interface UsePopupMenuResult {
      * Toggles the popper menu and prevents event bubbling.
      */
     handleClick: (event: MouseEvent) => void;
-    
+
     /**
      * Function to close the popper menu.
      */
     handleClose: () => void;
-    
+
     /**
      * Function to handle keyboard events on the popper list.
      * Closes menu on Tab or Escape key press.
      */
     handleListKeyDown: (event: KeyboardEvent) => void;
-    
+
     /**
      * Boolean indicating if the menu can be opened.
      * True when menu is opened and anchor element exists.
      */
     canBeMenuOpened: boolean;
-    
+
     /**
      * ID for the popper element, used for accessibility.
      * Defined only when menu can be opened.
@@ -50,8 +50,8 @@ interface UsePopupMenuResult {
  * @returns {UsePopupMenuResult} Object containing event handlers and menu state
  */
 export function usePopupMenu(
-    dispatch: Dispatch<GridActions>, 
-    isMenuOpened: boolean, 
+    dispatch: Dispatch<GridActions>,
+    isMenuOpened: boolean,
     menuAnchorEl: HTMLElement | null
 ): UsePopupMenuResult {
     /**
@@ -88,7 +88,7 @@ export function usePopupMenu(
 
     // Determine if the menu can be opened (both conditions must be true)
     const canBeMenuOpened = isMenuOpened && Boolean(menuAnchorEl);
-    
+
     // Set popper ID for accessibility when menu can be opened
     const popperId = canBeMenuOpened ? "transition-popper" : undefined;
 

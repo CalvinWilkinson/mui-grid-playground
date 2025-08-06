@@ -11,17 +11,21 @@ interface GridToolbarProps {
      * Unique identifier for this grid instance to maintain independent views
      */
     gridId?: string;
-    
+
     /**
      * Optional title for the views button
      */
     title?: string;
 }
 
-export default function GridToolbar({ 
-    gridId = "default", 
-    title = "Custom view" 
-}: GridToolbarProps): ReactNode {
+const DEFAULT_PROPS = {
+    gridId: "default",
+    title: "Custom view"
+} as const;
+
+export default function GridToolbar(props: GridToolbarProps): ReactNode {
+    const { gridId, title } = { ...DEFAULT_PROPS, ...props };
+
     const {
         state,
         dispatch,
