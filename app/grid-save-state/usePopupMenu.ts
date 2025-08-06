@@ -2,7 +2,17 @@ import { useCallback, KeyboardEvent, MouseEvent, Dispatch } from "react";
 import { GridActions } from "./grid-actions";
 
 /**
- * Interface defining the return type of the usePopper hook.
+ * Configuration options for the popup menu hook.
+ */
+interface UsePopupMenuOptions {
+    /**
+     * Custom ID for the popper element. Defaults to "transition-popper".
+     */
+    popperId?: string;
+}
+
+/**
+ * Interface defining the return type of the usePopupMenu hook.
  */
 interface UsePopupMenuResult {
     /**
@@ -36,7 +46,19 @@ interface UsePopupMenuResult {
 }
 
 /**
- * Custom hook for managing popper/dropdown menu behavior.
+ * Keys that close the popup menu when pressed.
+ */
+const CLOSE_MENU_KEYS = ["Tab", "Escape"] as const;
+
+/**
+ * Default configuration for the popup menu.
+ */
+const DEFAULT_OPTIONS: Required<UsePopupMenuOptions> = {
+    popperId: "transition-popper"
+};
+
+/**
+ * Custom hook for managing popup/dropdown menu behavior.
  * 
  * This hook provides functionality to:
  * - Handle clicks on the anchor element to toggle the menu
@@ -44,44 +66,45 @@ interface UsePopupMenuResult {
  * - Handle keyboard navigation (Tab/Escape to close)
  * - Determine if the menu can be opened based on state
  * - Provide accessibility ID for the popper
+ * 
  * @param {Dispatch<GridActions>} dispatch - Function to dispatch state changes
  * @param {boolean} isMenuOpened - Current state of whether menu is opened
  * @param {HTMLElement | null} menuAnchorEl - DOM element that anchors the menu
+ * @param {UsePopupMenuOptions} options - Optional configuration for the hook
  * @returns {UsePopupMenuResult} Object containing event handlers and menu state
  */
 export function usePopupMenu(
     dispatch: Dispatch<GridActions>,
     isMenuOpened: boolean,
-    menuAnchorEl: HTMLElement | null
+    menuAnchorEl: HTMLElement | null,
+    options: UsePopupMenuOptions = {}
 ): UsePopupMenuResult {
+    const config = { ...DEFAULT_OPTIONS, ...options };
     /**
-     * Handles clicks on the popper anchor element.
-     * Toggles the popper menu state and prevents the event from bubbling up.
-     * @param {MouseEvent} event - The mouse click event
+     * Handles clicks on the popup anchor element.
+     * Toggles the popup menu state and prevents the event from bubbling up.
      */
-    const handlePopperAnchorClick = useCallback((event: MouseEvent) => {
+    const handleClick = useCallback((event: MouseEvent) => {
         dispatch({ type: "togglePopupMenu", element: event.currentTarget as HTMLElement });
         event.stopPropagation();
     }, [dispatch]);
 
     /**
-     * Closes the popper menu by dispatching the closePopper action.
+     * Closes the popup menu by dispatching the close action.
      */
-    const handleClosePopper = useCallback(() => {
+    const handleClose = useCallback(() => {
         dispatch({ type: "closePopupMenu" });
     }, [dispatch]);
 
     /**
-     * Handles keyboard events on the popper list for accessibility.
-     * - Tab key: Prevents default behavior and closes the menu
-     * - Escape key: Closes the menu
-     * @param {KeyboardEvent} event - The keyboard event
+     * Handles keyboard events on the popup list for accessibility.
+     * Closes the menu when Tab or Escape keys are pressed.
      */
     const handleListKeyDown = useCallback((event: KeyboardEvent) => {
-        if (event.key === "Tab") {
-            event.preventDefault();
-            dispatch({ type: "closePopupMenu" });
-        } else if (event.key === "Escape") {
+        if (CLOSE_MENU_KEYS.includes(event.key as any)) {
+            if (event.key === "Tab") {
+                event.preventDefault();
+            }
             dispatch({ type: "closePopupMenu" });
         }
     }, [dispatch]);
@@ -90,11 +113,11 @@ export function usePopupMenu(
     const canBeMenuOpened = isMenuOpened && Boolean(menuAnchorEl);
 
     // Set popper ID for accessibility when menu can be opened
-    const popperId = canBeMenuOpened ? "transition-popper" : undefined;
+    const popperId = canBeMenuOpened ? config.popperId : undefined;
 
     return {
-        handleClick: handlePopperAnchorClick,
-        handleClose: handleClosePopper,
+        handleClick,
+        handleClose,
         handleListKeyDown,
         canBeMenuOpened,
         popperId,
