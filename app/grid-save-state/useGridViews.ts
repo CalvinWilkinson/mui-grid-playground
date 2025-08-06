@@ -102,9 +102,9 @@ export function useGridViews(gridId: string = "default"): HookResult {
      * @param {string} viewId - The unique ID of the view to activate
      */
     const handleSetActiveView = useCallback((viewId: string) => {
-        apiRef.current.restoreState(state.views[viewId].value);
+        apiRef.current.restoreState(state.viewConfigs[viewId].value);
         dispatch({ type: "setActiveView", id: viewId });
-    }, [apiRef, state.views]);
+    }, [apiRef, state.viewConfigs]);
 
     /**
      * Validates whether the current new view label is acceptable.
@@ -114,9 +114,9 @@ export function useGridViews(gridId: string = "default"): HookResult {
      * @returns {boolean} True if the label is valid, false otherwise
      */
     const isNewViewLabelValid = useMemo(() => {
-        if (state.newViewLabel.length === 0) return false;
-        return Object.values(state.views).every((view) => view.label !== state.newViewLabel);
-    }, [state.views, state.newViewLabel]);
+        if (state.viewName.length === 0) return false;
+        return Object.values(state.viewConfigs).every((view) => view.label !== state.viewName);
+    }, [state.viewConfigs, state.viewName]);
 
     return {
         state,

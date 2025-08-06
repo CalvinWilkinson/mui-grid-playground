@@ -21,14 +21,14 @@ export const toolbarReducer: Reducer<GridState, GridActions> = (state: GridState
          */
         case "createView": {
             const id = Math.random().toString();
-            const label = state.newViewLabel;
+            const label = state.viewName;
 
             return {
                 ...state,
-                activeViewId: id,
-                newViewLabel: "",
-                views: {
-                    ...state.views,
+                currentViewId: id,
+                viewName: "",
+                viewConfigs: {
+                    ...state.viewConfigs,
                     [id]: { label: label, value: action.value },
                 },
                 isMenuOpened: false,
@@ -43,14 +43,14 @@ export const toolbarReducer: Reducer<GridState, GridActions> = (state: GridState
          */
         case "deleteView": {
             const views = Object.fromEntries(
-                Object.entries(state.views).filter(([id]) => id !== action.id),
+                Object.entries(state.viewConfigs).filter(([id]) => id !== action.id),
             );
 
             let activeViewId: string | null;
-            if (state.activeViewId !== action.id) {
-                activeViewId = state.activeViewId;
+            if (state.currentViewId !== action.id) {
+                activeViewId = state.currentViewId;
             } else {
-                const viewIds = Object.keys(state.views);
+                const viewIds = Object.keys(state.viewConfigs);
 
                 if (viewIds.length === 0) {
                     activeViewId = null;
@@ -61,8 +61,8 @@ export const toolbarReducer: Reducer<GridState, GridActions> = (state: GridState
 
             return {
                 ...state,
-                views,
-                activeViewId,
+                viewConfigs: views,
+                currentViewId: activeViewId,
             };
         }
 
@@ -74,7 +74,7 @@ export const toolbarReducer: Reducer<GridState, GridActions> = (state: GridState
         case "setActiveView": {
             return {
                 ...state,
-                activeViewId: action.id,
+                currentViewId: action.id,
                 isMenuOpened: false,
             };
         }
@@ -83,10 +83,10 @@ export const toolbarReducer: Reducer<GridState, GridActions> = (state: GridState
          * Updates the label for a new view that is being created.
          * This is typically called when the user types in the new view name input field.
          */
-        case "setNewViewLabel": {
+        case "setViewLabel": {
             return {
                 ...state,
-                newViewLabel: action.label,
+                viewName: action.label,
             };
         }
 
@@ -99,7 +99,7 @@ export const toolbarReducer: Reducer<GridState, GridActions> = (state: GridState
             return {
                 ...state,
                 isMenuOpened: !state.isMenuOpened,
-                menuAnchorEl: action.element,
+                menuAnchorElement: action.element,
             };
         }
 
@@ -136,9 +136,9 @@ export const toolbarReducer: Reducer<GridState, GridActions> = (state: GridState
  * @property activeViewId - Null as no view is selected initially
  */
 export const INITIAL_STATE: GridState = {
-    views: {},
-    newViewLabel: "",
+    viewConfigs: {},
+    viewName: "",
     isMenuOpened: false,
-    menuAnchorEl: null,
-    activeViewId: null,
+    menuAnchorElement: null,
+    currentViewId: null,
 };

@@ -37,10 +37,10 @@ export default function GridToolbar({
         handleListKeyDown,
         canBeMenuOpened,
         popperId,
-    } = usePopupMenu(dispatch, state.isMenuOpened, state.menuAnchorEl);
+    } = usePopupMenu(dispatch, state.isMenuOpened, state.menuAnchorElement);
 
     const handleNewViewLabelChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        dispatch({ type: "setNewViewLabel", label: event.target.value });
+        dispatch({ type: "setViewLabel", label: event.target.value });
     };
 
     return (
@@ -54,13 +54,13 @@ export default function GridToolbar({
                 aria-expanded={state.isMenuOpened ? "true" : undefined}
                 aria-haspopup="true"
                 onClick={handlePopperAnchorClick}>
-                {title} ({Object.keys(state.views).length})
+                {title} ({Object.keys(state.viewConfigs).length})
             </Button>
 
             <Popper
                 id={popperId}
                 open={canBeMenuOpened}
-                anchorEl={state.menuAnchorEl}
+                anchorEl={state.menuAnchorElement}
                 role={undefined}
                 transition
                 placement="bottom-start"
@@ -74,12 +74,12 @@ export default function GridToolbar({
                                     autoFocusItem={state.isMenuOpened}
                                     aria-labelledby={`custom-view-button-${gridId}`}
                                     onKeyDown={handleListKeyDown}>
-                                    {Object.entries(state.views).map(([viewId, view]) => (
+                                    {Object.entries(state.viewConfigs).map(([viewId, view]) => (
                                         <PopupMenuItem
                                             key={viewId}
                                             view={view}
                                             viewId={viewId}
-                                            selected={viewId === state.activeViewId}
+                                            selected={viewId === state.currentViewId}
                                             onDelete={handleDeleteView}
                                             onSelect={handleSetActiveView} />
                                     ))}
@@ -91,7 +91,7 @@ export default function GridToolbar({
             </Popper>
 
             <NewGridViewButton
-                label={state.newViewLabel}
+                label={state.viewName}
                 onLabelChange={handleNewViewLabelChange}
                 onSubmit={createNewView}
                 isValid={isNewViewLabelValid} />
