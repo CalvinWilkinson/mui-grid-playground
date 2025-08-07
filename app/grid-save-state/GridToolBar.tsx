@@ -40,7 +40,6 @@ export default function GridToolbar(props: GridToolbarProps): ReactNode {
         handleClose: handleClosePopper,
         handleListKeyDown,
         canBeMenuOpened,
-        popperId,
     } = usePopupMenu(dispatch, state.isMenuOpened, state.menuAnchorElement);
 
     const handleNewViewLabelChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -50,7 +49,6 @@ export default function GridToolbar(props: GridToolbarProps): ReactNode {
     return (
         <Toolbar>
             <Button
-                aria-describedby={popperId}
                 type="button"
                 size="small"
                 id={`custom-view-button-${gridId}`}
@@ -62,7 +60,6 @@ export default function GridToolbar(props: GridToolbarProps): ReactNode {
             </Button>
 
             <Popper
-                id={popperId}
                 open={canBeMenuOpened}
                 anchorEl={state.menuAnchorElement}
                 role={undefined}

@@ -2,16 +2,6 @@ import { useCallback, KeyboardEvent, MouseEvent, Dispatch } from "react";
 import { GridActions } from "./grid-actions";
 
 /**
- * Configuration options for the popup menu hook.
- */
-interface UsePopupMenuOptions {
-    /**
-     * Custom ID for the popper element. Defaults to "transition-popper".
-     */
-    popperId?: string;
-}
-
-/**
  * Interface defining the return type of the usePopupMenu hook.
  */
 interface UsePopupMenuResult {
@@ -37,25 +27,12 @@ interface UsePopupMenuResult {
      * True when menu is opened and anchor element exists.
      */
     canBeMenuOpened: boolean;
-
-    /**
-     * ID for the popper element, used for accessibility.
-     * Defined only when menu can be opened.
-     */
-    popperId: string | undefined;
 }
 
 /**
  * Keys that close the popup menu when pressed.
  */
-const CLOSE_MENU_KEYS = ["Tab", "Escape"] as const;
-
-/**
- * Default configuration for the popup menu.
- */
-const DEFAULT_OPTIONS: Required<UsePopupMenuOptions> = {
-    popperId: "transition-popper"
-};
+const CLOSE_MENU_KEYS = ["Tab", "Escape"];
 
 /**
  * Custom hook for managing popup/dropdown menu behavior.
@@ -77,9 +54,7 @@ export function usePopupMenu(
     dispatch: Dispatch<GridActions>,
     isMenuOpened: boolean,
     menuAnchorEl: HTMLElement | null,
-    options: UsePopupMenuOptions = {}
 ): UsePopupMenuResult {
-    const config = { ...DEFAULT_OPTIONS, ...options };
     /**
      * Handles clicks on the popup anchor element.
      * Toggles the popup menu state and prevents the event from bubbling up.
@@ -101,10 +76,11 @@ export function usePopupMenu(
      * Closes the menu when Tab or Escape keys are pressed.
      */
     const handleListKeyDown = useCallback((event: KeyboardEvent) => {
-        if (CLOSE_MENU_KEYS.includes(event.key as any)) {
+        if (CLOSE_MENU_KEYS.includes(event.key)) {
             if (event.key === "Tab") {
                 event.preventDefault();
             }
+
             dispatch({ type: "closePopupMenu" });
         }
     }, [dispatch]);
@@ -112,14 +88,10 @@ export function usePopupMenu(
     // Determine if the menu can be opened (both conditions must be true)
     const canBeMenuOpened = isMenuOpened && Boolean(menuAnchorEl);
 
-    // Set popper ID for accessibility when menu can be opened
-    const popperId = canBeMenuOpened ? config.popperId : undefined;
-
     return {
         handleClick,
         handleClose,
         handleListKeyDown,
         canBeMenuOpened,
-        popperId,
     };
 }
