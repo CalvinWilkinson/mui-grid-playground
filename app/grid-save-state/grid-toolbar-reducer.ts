@@ -11,7 +11,7 @@ import { GridActions } from "./grid-actions";
  * @param action - The action to be processed
  * @returns The new state after applying the action
  */
-export const toolbarReducer: Reducer<GridState, GridActions> = (state: GridState, action: GridActions) => {
+export const gridToolbarReducer: Reducer<GridState, GridActions> = (state: GridState, action: GridActions) => {
     switch (action.type) {
         /**
          * Creates a new view with the current grid state.

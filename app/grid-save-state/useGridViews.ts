@@ -1,6 +1,6 @@
 import { Dispatch, useCallback, useMemo, useReducer, useEffect } from "react";
 import { useGridApiContext } from "@mui/x-data-grid";
-import { toolbarReducer, INITIAL_STATE } from "./toolbar-reducer";
+import { gridToolbarReducer, INITIAL_STATE } from "./grid-toolbar-reducer";
 import { GridActions } from "./grid-actions";
 
 /**
@@ -67,7 +67,7 @@ export function useGridViews(gridId: string = "default"): HookResult {
     }, [gridId]);
 
     // Initialize state with reducer for managing views
-    const [state, dispatch] = useReducer(toolbarReducer, getInitialState());
+    const [state, dispatch] = useReducer(gridToolbarReducer, getInitialState());
 
     // Update the global state whenever local state changes
     useEffect(() => {
