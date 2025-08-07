@@ -1,7 +1,8 @@
-import { Dispatch, useCallback, useMemo, useReducer, useEffect } from "react";
-import { useGridApiContext } from "@mui/x-data-grid";
+import { Dispatch, useCallback, useMemo, useReducer, useEffect, RefObject } from "react";
 import { gridToolbarReducer, INITIAL_STATE } from "./grid-toolbar-reducer";
 import { GridActions } from "./grid-actions";
+import { GridApiCommunity } from "@mui/x-data-grid/internals";
+import { GridState } from "./grid-state";
 
 /**
  * Interface defining the return type of the useGridViews hook
@@ -11,35 +12,34 @@ interface HookResult {
      * Current state of the grid views
      */
     state: typeof INITIAL_STATE;
-    
+
     /**
      * Dispatch function for updating state
      */
     dispatch: Dispatch<GridActions>;
-    
+
+    initView: () => void;
+
     /**
      * Function to create a new view from current grid state
      */
     createNewView: () => void;
-    
+
     /**
      * Function to delete a specific view by ID
      */
     handleDeleteView: (viewId: string) => void;
-    
+
     /**
      * Function to set a specific view as active and restore its state
      */
     handleSetActiveView: (viewId: string) => void;
-    
+
     /**
      * Boolean indicating if the new view label is valid (not empty and unique)
      */
     isNewViewLabelValid: boolean;
 }
-
-// Global state storage for multiple grid instances
-const gridStates = new Map<string, typeof INITIAL_STATE>();
 
 /**
  * Custom hook for managing MUI Data Grid view states.
@@ -51,28 +51,27 @@ const gridStates = new Map<string, typeof INITIAL_STATE>();
  * - Validate new view labels for uniqueness
  * - Maintain independent state for different grid instances
  * 
- * @param gridId - Unique identifier for this grid instance
  * @returns {HookResult} Object containing state, dispatch function, and view management functions
  */
-export function useGridViews(gridId: string = "default"): HookResult {
-    // Get the MUI Data Grid API reference for accessing grid state
-    const apiRef = useGridApiContext();
-    
-    // Get or create initial state for this grid instance
-    const getInitialState = useCallback(() => {
-        if (!gridStates.has(gridId)) {
-            gridStates.set(gridId, { ...INITIAL_STATE });
-        }
-        return gridStates.get(gridId)!;
-    }, [gridId]);
-
+export function useGridViews(apiRef: RefObject<GridApiCommunity | null>): HookResult {
     // Initialize state with reducer for managing views
-    const [state, dispatch] = useReducer(gridToolbarReducer, getInitialState());
+    const [state, dispatch] = useReducer(gridToolbarReducer, INITIAL_STATE);
 
-    // Update the global state whenever local state changes
-    useEffect(() => {
-        gridStates.set(gridId, state);
-    }, [gridId, state]);
+    const initView = useCallback(() => {
+        let gridStateJsonData = localStorage?.getItem("dataGridState");
+
+        if (!gridStateJsonData) {
+            localStorage.setItem("dataGridState", JSON.stringify(INITIAL_STATE));
+            gridStateJsonData = localStorage?.getItem("dataGridState");
+        }
+
+        const gridState: GridState = JSON.parse(gridStateJsonData || "{}");
+
+        dispatch({
+            type: "setActiveView",
+            id: gridState.currentViewId
+        });
+    }, []);
 
     /**
      * Creates a new view by capturing the current state of the grid.
@@ -80,6 +79,10 @@ export function useGridViews(gridId: string = "default"): HookResult {
      * and dispatches it to be saved as a new view.
      */
     const createNewView = useCallback(() => {
+        if (apiRef === null || apiRef.current === null) {
+            throw new Error("The api reference to the MUI data grid cannot be null.");
+        }
+
         dispatch({
             type: "createView",
             value: apiRef.current.exportState(),
@@ -102,6 +105,10 @@ export function useGridViews(gridId: string = "default"): HookResult {
      * @param {string} viewId - The unique ID of the view to activate
      */
     const handleSetActiveView = useCallback((viewId: string) => {
+        if (apiRef === null || apiRef.current === null) {
+            throw new Error("The api reference to the MUI data grid cannot be null.");
+        }
+
         apiRef.current.restoreState(state.viewConfigs[viewId].value);
         dispatch({ type: "setActiveView", id: viewId });
     }, [apiRef, state.viewConfigs]);
@@ -114,12 +121,24 @@ export function useGridViews(gridId: string = "default"): HookResult {
      * @returns {boolean} True if the label is valid, false otherwise
      */
     const isNewViewLabelValid = useMemo(() => {
-        if (state.viewName.length === 0) return false;
+        if (state.viewName.length === 0) {
+            return false;
+        }
+
         return Object.values(state.viewConfigs).every((view) => view.label !== state.viewName);
     }, [state.viewConfigs, state.viewName]);
 
+    // Add useEffect to react to state changes
+    useEffect(() => {
+        console.log('Updated state:', state);
+
+        // Example: Save to localStorage whenever views change
+        localStorage.setItem("dataGridState", JSON.stringify(state));
+    }, [state]);
+
     return {
         state,
+        initView,
         dispatch,
         createNewView,
         handleDeleteView,

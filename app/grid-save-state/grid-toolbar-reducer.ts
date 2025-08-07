@@ -20,7 +20,7 @@ export const gridToolbarReducer: Reducer<GridState, GridActions> = (state: GridS
          * and closes the menu.
          */
         case "createView": {
-            const id = Math.random().toString();
+            const id = crypto.randomUUID();
             const label = state.viewName;
 
             return {
@@ -136,9 +136,38 @@ export const gridToolbarReducer: Reducer<GridState, GridActions> = (state: GridS
  * @property activeViewId - Null as no view is selected initially
  */
 export const INITIAL_STATE: GridState = {
+    /**
+     * Collection of saved grid view configurations.
+     * Each key is a unique view ID, and the value contains the view's
+     * display label and configuration data for restoring grid state.
+     */
     viewConfigs: {},
+
+    /**
+     * Current value of the new view name input field.
+     * Used when creating a new view to store the user-entered name
+     * before the view is actually created and saved.
+     */
     viewName: "",
+
+    /**
+     * Boolean flag indicating whether the view selector popup menu is open.
+     * Controls the visibility of the dropdown menu that shows available views
+     * and options for creating/deleting views.
+     */
     isMenuOpened: false,
+
+    /**
+     * Reference to the DOM element that serves as the anchor for the popup menu.
+     * Used by Material-UI's Menu component to position the popup relative
+     * to the trigger button or element.
+     */
     menuAnchorElement: null,
+
+    /**
+     * ID of the currently active/selected grid view.
+     * When null, no view is selected (default state).
+     * Used to determine which view configuration to apply to the grid.
+     */
     currentViewId: null,
 };

@@ -11,10 +11,10 @@ import {
 } from "@mui/x-data-grid";
 import { useCallback, useLayoutEffect, useState } from "react";
 import GridToolbar from "./grid-save-state/GridToolBar";
+import { INITIAL_STATE } from "./grid-save-state/grid-toolbar-reducer";
 
 export default function SaveAndRestoreStorageGrid() {
     const customerApiRef = useGridApiRef();
-    const orderApiRef = useGridApiRef();
 
     const { data, loading } = useDemoData({
         dataSet: "Commodity",
@@ -22,40 +22,20 @@ export default function SaveAndRestoreStorageGrid() {
         maxColumns: 10,
     });
 
-    // Second dataset for the orders grid
-    const { data: ordersData, loading: ordersLoading } = useDemoData({
-        dataSet: "Employee",
-        rowLength: 50,
-        maxColumns: 8,
-    });
-
     const [initialState, setInitialState] = useState<GridInitialState>();
 
-    const saveSnapshot = useCallback(() => {
-        if (customerApiRef?.current?.exportState && localStorage) {
-            const currentState = customerApiRef.current.exportState();
-            localStorage.setItem("dataGridState", JSON.stringify(currentState));
-        }
-    }, [customerApiRef]);
+    // const saveSnapshot = useCallback(() => {
+    //     if (customerApiRef?.current?.exportState && localStorage) {
+    //         const currentState = customerApiRef.current.exportState();
+    //         localStorage.setItem("dataGridState", JSON.stringify(currentState));
+    //     }
+    // }, [customerApiRef]);
 
-    useLayoutEffect(() => {
-        console.log("useLayoutEffect called");
-        const stateFromLocalStorage = localStorage?.getItem("dataGridState");
-        setInitialState(stateFromLocalStorage ? JSON.parse(stateFromLocalStorage) : {});
+    // useLayoutEffect(() => {
+    //     console.log("useLayoutEffect called");
+    // }, []);
 
-        // handle refresh and navigating away/refreshing
-        window.addEventListener("beforeunload", saveSnapshot);
-
-        return () => {
-            console.log("BEFORE UNLOAD");
-            window.alert("BEFORE UNLOAD");
-            // in case of an SPA remove the event-listener
-            window.removeEventListener("beforeunload", saveSnapshot);
-            saveSnapshot();
-        };
-    }, [saveSnapshot]);
-
-    if (!initialState || loading || ordersLoading) {
+    if (loading) {
         return <CircularProgress />;
     }
 
@@ -71,31 +51,15 @@ export default function SaveAndRestoreStorageGrid() {
                         showToolbar={true}
                         loading={loading}
                         apiRef={customerApiRef}
-                        slots={{ toolbar: () => (
-                            <GridToolbar gridId="customers" title="Customer Views" />
-                        )}}
+                        slots={{
+                            toolbar: () => (
+                                <GridToolbar apiRef={customerApiRef} gridId="customers" title="Customer Views" />
+                            )
+                        }}
                         initialState={{
                             ...data.initialState,
                             ...initialState,
                         }}
-                    />
-                </Box>
-            </Box>
-
-            <Box>
-                <Typography variant="h6" gutterBottom>
-                    Orders Grid (Employee Data)
-                </Typography>
-                <Box sx={{ height: 400, width: "100%" }}>
-                    <DataGrid
-                        {...ordersData}
-                        showToolbar={true}
-                        loading={ordersLoading}
-                        apiRef={orderApiRef}
-                        slots={{ toolbar: () => (
-                            <GridToolbar gridId="orders" title="Order Views" />
-                        )}}
-                        initialState={ordersData.initialState}
                     />
                 </Box>
             </Box>

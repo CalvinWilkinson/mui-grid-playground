@@ -1,12 +1,19 @@
-import { ChangeEvent, ReactNode } from "react";
+import { ChangeEvent, ReactNode, RefObject, useEffect } from "react";
 import { Button, ClickAwayListener, Fade, MenuList, Paper, Popper } from "@mui/material";
 import { Toolbar } from "@mui/x-data-grid";
 import { PopupMenuItem } from "./PopupMenuItem";
 import { NewGridViewButton } from "./NewGridViewButton";
 import { useGridViews } from "./useGridViews";
 import { usePopupMenu } from "./usePopupMenu";
+import { GridApiCommunity } from "@mui/x-data-grid/internals";
 
 interface GridToolbarProps {
+    /**
+     * Reference to the MUI Data Grid API.
+     * Used to access grid state and methods for managing views.
+     */
+    apiRef: RefObject<GridApiCommunity | null>;
+
     /**
      * Unique identifier for this grid instance to maintain independent views
      */
@@ -24,20 +31,21 @@ const DEFAULT_PROPS = {
 } as const;
 
 export default function GridToolbar(props: GridToolbarProps): ReactNode {
-    const { gridId, title } = { ...DEFAULT_PROPS, ...props };
+    const { apiRef: gridApiRef, gridId, title } = { ...DEFAULT_PROPS, ...props };
 
     const {
         state,
+        initView,
         dispatch,
         createNewView,
         handleDeleteView,
         handleSetActiveView,
         isNewViewLabelValid,
-    } = useGridViews(gridId);
+    } = useGridViews(gridApiRef);
 
     const {
-        handleClick: handlePopperAnchorClick,
-        handleClose: handleClosePopper,
+        handleClick: handleMenuClick,
+        handleClose: handleCloseMenu,
         handleListKeyDown,
         canBeMenuOpened,
     } = usePopupMenu(dispatch, state.isMenuOpened, state.menuAnchorElement);
@@ -45,6 +53,10 @@ export default function GridToolbar(props: GridToolbarProps): ReactNode {
     const handleNewViewLabelChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         dispatch({ type: "setViewLabel", label: event.target.value });
     };
+
+    useEffect(() => {
+        initView();
+    }, []);
 
     return (
         <Toolbar>
@@ -55,7 +67,7 @@ export default function GridToolbar(props: GridToolbarProps): ReactNode {
                 aria-controls={state.isMenuOpened ? `custom-view-menu-${gridId}` : undefined}
                 aria-expanded={state.isMenuOpened ? "true" : undefined}
                 aria-haspopup="true"
-                onClick={handlePopperAnchorClick}>
+                onClick={handleMenuClick}>
                 {title} ({Object.keys(state.viewConfigs).length})
             </Button>
 
@@ -69,7 +81,7 @@ export default function GridToolbar(props: GridToolbarProps): ReactNode {
                 {({ TransitionProps }) => (
                     <Fade {...TransitionProps} timeout={350}>
                         <Paper>
-                            <ClickAwayListener onClickAway={handleClosePopper}>
+                            <ClickAwayListener onClickAway={handleCloseMenu}>
                                 <MenuList
                                     id={`custom-view-menu-${gridId}`}
                                     autoFocusItem={state.isMenuOpened}
