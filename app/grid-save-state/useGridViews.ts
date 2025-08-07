@@ -1,4 +1,4 @@
-import { Dispatch, useCallback, useMemo, useReducer, useEffect, RefObject } from "react";
+import { Dispatch, useCallback, useMemo, useReducer, useEffect, RefObject, useState } from "react";
 import { gridToolbarReducer, INITIAL_STATE } from "./grid-toolbar-reducer";
 import { GridActions } from "./grid-actions";
 import { GridApiCommunity } from "@mui/x-data-grid/internals";
@@ -54,18 +54,21 @@ interface HookResult {
  * @returns {HookResult} Object containing state, dispatch function, and view management functions
  */
 export function useGridViews(apiRef: RefObject<GridApiCommunity | null>): HookResult {
-    // Initialize state with reducer for managing views
+    const [initialized, setInitialized] = useState(false);
     const [state, dispatch] = useReducer(gridToolbarReducer, INITIAL_STATE);
 
     const initView = useCallback(() => {
         let gridStateJsonData = localStorage?.getItem("dataGridState");
 
         if (!gridStateJsonData) {
-            localStorage.setItem("dataGridState", JSON.stringify(INITIAL_STATE));
-            gridStateJsonData = localStorage?.getItem("dataGridState");
+            const newData = JSON.stringify(INITIAL_STATE);
+            localStorage.setItem("dataGridState", newData);
+            gridStateJsonData = newData;
         }
 
         const gridState: GridState = JSON.parse(gridStateJsonData || "{}");
+
+        setInitialized(true);
 
         dispatch({
             type: "setActiveView",
@@ -130,11 +133,13 @@ export function useGridViews(apiRef: RefObject<GridApiCommunity | null>): HookRe
 
     // Add useEffect to react to state changes
     useEffect(() => {
-        console.log('Updated state:', state);
+        if (!initialized || state === INITIAL_STATE) {
+            return;
+        }
 
         // Example: Save to localStorage whenever views change
         localStorage.setItem("dataGridState", JSON.stringify(state));
-    }, [state]);
+    }, [state, initialized]);
 
     return {
         state,
