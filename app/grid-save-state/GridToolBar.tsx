@@ -56,7 +56,7 @@ export default function GridToolbar(props: GridToolbarProps): ReactNode {
 
     useEffect(() => {
         initView();
-    }, []);
+    }, [initView]);
 
     return (
         <Toolbar>

@@ -143,8 +143,19 @@ export function useGridViews(apiRef: RefObject<GridApiCommunity | null>): HookRe
             return;
         }
 
-        // Persist every state change after initialization
-        localStorage.setItem("dataGridState", JSON.stringify(state));
+    // Persist every state change after initialization.
+    // NOTE: The full state contains a non-serializable DOM element (menuAnchorElement)
+    // which produces a circular reference error when passed to JSON.stringify.
+    // We explicitly strip it (or reset to null) before persisting.
+        // Build serializable snapshot without menuAnchorElement (DOM ref)
+        const serializable = {
+            viewConfigs: state.viewConfigs,
+            viewName: state.viewName,
+            currentViewId: state.currentViewId,
+            isMenuOpened: state.isMenuOpened,
+            menuAnchorElement: null as HTMLElement | null,
+        };
+        localStorage.setItem("dataGridState", JSON.stringify(serializable));
     }, [state, initialized]);
 
     return {
