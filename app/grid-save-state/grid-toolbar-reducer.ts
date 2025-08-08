@@ -13,6 +13,11 @@ import { GridActions } from "./grid-actions";
  */
 export const gridToolbarReducer: Reducer<GridState, GridActions> = (state: GridState, action: GridActions) => {
     switch (action.type) {
+        case "hydrate": {
+            // Replace entire state with persisted version
+            return { ...action.payload };
+        }
+
         /**
          * Creates a new view with the current grid state.
          * Generates a random ID for the view, uses the current newViewLabel as the display name,

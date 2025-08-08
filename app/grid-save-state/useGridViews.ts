@@ -58,23 +58,29 @@ export function useGridViews(apiRef: RefObject<GridApiCommunity | null>): HookRe
     const [state, dispatch] = useReducer(gridToolbarReducer, INITIAL_STATE);
 
     const initView = useCallback(() => {
-        let gridStateJsonData = localStorage?.getItem("dataGridState");
+        if (initialized) return; // safeguard
 
-        if (!gridStateJsonData) {
-            const newData = JSON.stringify(INITIAL_STATE);
-            localStorage.setItem("dataGridState", newData);
-            gridStateJsonData = newData;
+        const gridStateJsonData = typeof window !== "undefined" ? localStorage.getItem("dataGridState") : null;
+
+        if (gridStateJsonData) {
+            try {
+                const gridState: GridState = JSON.parse(gridStateJsonData);
+
+                // Only hydrate if object shape roughly matches
+                if (gridState && typeof gridState === "object" && "viewConfigs" in gridState) {
+                    dispatch({ type: "hydrate", payload: gridState });
+                }
+            } catch {
+                // If parse fails, fall back to INITIAL_STATE and rewrite storage
+                localStorage.setItem("dataGridState", JSON.stringify(INITIAL_STATE));
+            }
+        } else {
+            // Nothing stored yet: create an initial persisted snapshot
+            localStorage.setItem("dataGridState", JSON.stringify(INITIAL_STATE));
         }
 
-        const gridState: GridState = JSON.parse(gridStateJsonData || "{}");
-
         setInitialized(true);
-
-        dispatch({
-            type: "setActiveView",
-            id: gridState.currentViewId
-        });
-    }, []);
+    }, [initialized]);
 
     /**
      * Creates a new view by capturing the current state of the grid.
@@ -133,11 +139,11 @@ export function useGridViews(apiRef: RefObject<GridApiCommunity | null>): HookRe
 
     // Add useEffect to react to state changes
     useEffect(() => {
-        if (!initialized || state === INITIAL_STATE) {
+        if (!initialized) {
             return;
         }
 
-        // Example: Save to localStorage whenever views change
+        // Persist every state change after initialization
         localStorage.setItem("dataGridState", JSON.stringify(state));
     }, [state, initialized]);
 

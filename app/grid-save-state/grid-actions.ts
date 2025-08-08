@@ -1,4 +1,5 @@
 import { GridInitialState } from "@mui/x-data-grid";
+import { GridState } from "./grid-state";
 
 /**
  * Union type defining all possible actions that can be dispatched to modify grid state.
@@ -46,4 +47,11 @@ export type GridActions =
      * This action is used to hide dropdown menus and cleanup
      * any associated UI state.
      */
-    | { type: "closePopupMenu" };
+    | { type: "closePopupMenu" }
+
+    /**
+     * Replaces the entire current state with a previously persisted state.
+     * Used during initialization to hydrate from localStorage without losing
+     * previously saved view configurations.
+     */
+    | { type: "hydrate"; payload: GridState };
